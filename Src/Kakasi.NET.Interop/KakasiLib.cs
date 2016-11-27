@@ -88,7 +88,7 @@ namespace Kakasi.NET.Interop
         /// <summary>
         /// Kakasi library instance pointer
         /// </summary>
-        private static IntPtr KakasiLibPtr;
+        private static IntPtr KakasiLibPtr = IntPtr.Zero;
 
         #endregion
 
@@ -164,6 +164,10 @@ namespace Kakasi.NET.Interop
         public static void SetParams(string[] @params)
         {
 
+            // Init, if required
+            if (KakasiLibPtr == IntPtr.Zero) Init();
+
+            // Invoke
             _kakasiGetoptArgv.Invoke(@params.Length, @params);
 
         }
@@ -176,6 +180,9 @@ namespace Kakasi.NET.Interop
         public static string DoKakasi(string japanese)
         {
 
+            // Init, if required
+            if (KakasiLibPtr == IntPtr.Zero) Init();
+
             // Get EUC-JP encoding
             var encoding = Encoding.GetEncoding("euc-jp");
 
@@ -184,7 +191,7 @@ namespace Kakasi.NET.Interop
             var callBytes = new byte[japaneseBytes.Length + 1];
             Buffer.BlockCopy(japaneseBytes, 0, callBytes, 0, japaneseBytes.Length);
 
-            // Get result pointer
+            // Invoke to get result pointer
             var resultPtr = _kakasiDo.Invoke(callBytes);
 
             // Extract result bytes
