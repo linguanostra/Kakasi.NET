@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -100,8 +101,24 @@ namespace Kakasi.NET.Interop
         public static void Init()
         {
 
+            // Get executing assembly location
+            var executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
+            var executingAssemblyPath = Path.GetDirectoryName(executingAssemblyLocation);
+
+            // Init using this path
+            Init(executingAssemblyPath);
+
+        }
+
+        /// <summary>
+        /// Init Kakasi library
+        /// </summary>
+        /// <param name="executionPath">Execution path (to search for x86/x64 DLL)</param>
+        public static void Init(string executionPath)
+        {
+
             // Lib path
-            var kakasiLibPath = Path.Combine(Environment.CurrentDirectory,
+            var kakasiLibPath = Path.Combine(executionPath,
                 Environment.Is64BitProcess ? @"x64\" : @"x86\");
 
             // Set search path
@@ -111,7 +128,7 @@ namespace Kakasi.NET.Interop
             KakasiLibPtr = LoadLibrary(Path.Combine(kakasiLibPath, @"libkakasi.dll"));
 
             // Check for errors
-            if (KakasiLibPtr != null)
+            if (KakasiLibPtr != IntPtr.Zero)
             {
 
                 // Loaded correctly
@@ -137,6 +154,7 @@ namespace Kakasi.NET.Interop
 
                     // Throw it
                     throw new Win32Exception(Marshal.GetLastWin32Error());
+
                 }
 
                 // Unknown error
